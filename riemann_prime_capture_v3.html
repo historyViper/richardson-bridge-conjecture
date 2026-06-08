@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riemann Zeros — From Primes to Anyons</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg:#080a12; --panel:#0d1020; --panel2:#0b0e1c;
+  --gold:#c9a84c; --gold-light:#e8c97a; --gold-dim:#5a4a1e;
+  --pink:#e07aaa; --pink-light:#f5b0d0;
+  --c1:#5bc8ff; --c2:#ff8c5a;
+  --teal:#4ac9c0; --violet:#9b7cd8;
+  --green:#6bcf8a; --red:#e05555;
+  --neutral:#7a8ab8; --dim:#2a2f48;
+  --text:#c8cce0; --text-dim:#5a6080;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Text',Georgia,serif;min-height:100vh;}
+.page{max-width:860px;margin:0 auto;padding:1.2rem 0.9rem 3rem;}
+
+/* Header */
+header{text-align:center;margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid var(--dim);}
+h1{font-family:'Cinzel',serif;font-size:clamp(0.95rem,3.5vw,1.5rem);color:var(--gold-light);letter-spacing:0.03em;margin-bottom:0.2rem;}
+.tagline{font-size:0.82rem;color:var(--text-dim);font-style:italic;}
+
+/* Zero selector */
+.zero-row{display:flex;gap:0.45rem;justify-content:center;margin-bottom:0.9rem;flex-wrap:wrap;}
+.zbtn{font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.05em;padding:0.35rem 0.85rem;border:1px solid var(--dim);background:transparent;color:var(--text-dim);cursor:pointer;border-radius:2px;transition:all 0.2s;}
+.zbtn:hover{border-color:var(--gold);color:var(--text);}
+.zbtn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.07);}
+
+/* Tab bar */
+.tabs{display:flex;border-bottom:1px solid var(--dim);margin-bottom:1rem;gap:0;}
+.tab{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.55rem 1rem;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;transition:all 0.2s;background:transparent;border-top:none;border-left:none;border-right:none;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--gold-light);border-bottom-color:var(--gold);}
+
+/* Tab panels */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ─── TAB 1: Mirror Pairs ─────────────────────────────────────────────────── */
+.t1-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
+@media(max-width:560px){.t1-layout{grid-template-columns:1fr;}}
+.canvas-wrap{background:var(--panel);border:1px solid var(--dim);border-radius:4px;padding:0.6rem;}
+canvas{display:block;width:100%;height:auto;}
+.info-col{display:flex;flex-direction:column;gap:0.8rem;}
+.card{background:var(--panel);border:1px solid var(--dim);border-radius:4px;padding:0.8rem 0.9rem;}
+.card-title{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.1em;color:var(--text-dim);text-transform:uppercase;margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid var(--dim);}
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:0.22rem 0;}
+.stat-label{color:var(--text-dim);font-size:0.8rem;}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:0.78rem;}
+.g{color:var(--gold)}.t{color:var(--teal)}.p{color:var(--pink-light)}.v{color:var(--violet)}
+
+.pt{width:100%;border-collapse:collapse;font-size:0.77rem;}
+.pt th{font-family:'Cinzel',serif;font-size:0.56rem;letter-spacing:0.07em;color:var(--text-dim);text-transform:uppercase;padding:0.2rem 0.3rem;text-align:left;border-bottom:1px solid var(--dim);}
+.pt td{font-family:'JetBrains Mono',monospace;padding:0.18rem 0.3rem;border-bottom:1px solid rgba(42,47,72,0.3);font-size:0.73rem;}
+.pt tr:last-child td{border-bottom:none;}
+.c1{color:var(--c1)}.c2{color:var(--c2)}.cn{color:var(--neutral)}
+
+.legend{display:flex;gap:0.7rem;flex-wrap:wrap;font-size:0.73rem;margin-top:0.3rem;}
+.li{display:flex;align-items:center;gap:0.28rem;}
+.ld{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+.narrative{background:rgba(201,168,76,0.04);border-left:2px solid var(--gold);border-radius:2px;padding:0.65rem 0.8rem;font-size:0.88rem;line-height:1.65;color:var(--text);margin-top:0.85rem;}
+.narrative em{color:var(--gold-light);font-style:normal;}
+.narrative strong{color:var(--pink-light);}
+.mono{font-family:'JetBrains Mono',monospace;font-size:0.8em;color:var(--teal);}
+
+/* ─── TAB 2: Catalan / Mertens ────────────────────────────────────────────── */
+.t2-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:560px){.t2-layout{grid-template-columns:1fr;}}
+
+#catalan-canvas, #mertens-canvas{display:block;width:100%;height:auto;}
+
+.cat-row{display:flex;align-items:center;gap:0.5rem;padding:0.22rem 0;font-size:0.82rem;font-family:'JetBrains Mono',monospace;border-bottom:1px solid rgba(42,47,72,0.25);}
+.cat-row:last-child{border-bottom:none;}
+.cat-p{min-width:28px;font-size:0.78rem;}
+.cat-lane{min-width:28px;font-size:0.72rem;}
+.cat-frac{min-width:80px;font-size:0.73rem;}
+.cat-dir{min-width:18px;font-size:1rem;text-align:center;}
+.cat-bar-wrap{flex:1;height:10px;background:rgba(42,47,72,0.5);border-radius:2px;overflow:hidden;}
+.cat-bar{height:100%;border-radius:2px;transition:width 0.6s ease;}
+.cat-running{min-width:64px;text-align:right;font-size:0.73rem;}
+
+.g-line{margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid var(--dim);font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--text-dim);text-align:center;}
+.g-line em{color:var(--gold-light);font-style:normal;}
+
+/* ─── TAB 3: Jones / Freedman ─────────────────────────────────────────────── */
+.t3-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
+@media(max-width:560px){.t3-layout{grid-template-columns:1fr;}}
+#jones-canvas{display:block;width:100%;height:auto;}
+
+.jones-row{display:flex;justify-content:space-between;align-items:center;padding:0.28rem 0;border-bottom:1px solid rgba(42,47,72,0.3);font-size:0.84rem;}
+.jones-row:last-child{border-bottom:none;}
+.jr-label{color:var(--text-dim);font-size:0.79rem;}
+.jr-val{font-family:'JetBrains Mono',monospace;font-size:0.79rem;}
+.jr-badge{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.05em;padding:0.08rem 0.35rem;border-radius:2px;}
+.bd{background:rgba(107,207,138,0.12);color:var(--green);border:1px solid rgba(107,207,138,0.3);}
+.bh{background:rgba(155,124,216,0.1);color:var(--violet);border:1px solid rgba(155,124,216,0.25);}
+.bz{background:rgba(224,85,85,0.1);color:var(--red);border:1px solid rgba(224,85,85,0.25);}
+
+.chain-item{padding:0.45rem 0.55rem;border-left:2px solid var(--dim);margin-bottom:0.45rem;font-size:0.85rem;line-height:1.55;}
+.chain-item.active-chain{border-left-color:var(--gold);}
+.chain-num{font-family:'Cinzel',serif;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.2rem;}
+.chain-text em{color:var(--gold-light);font-style:normal;}
+.chain-text strong{color:var(--pink-light);}
+
+/* Footer eq */
+.eq{text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text-dim);padding:0.5rem;border-top:1px solid var(--dim);margin-top:0.8rem;line-height:1.7;}
+.eq em{color:var(--gold-light);font-style:normal;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>From Mirror Pairs to Anyons — Why the Riemann Zeros Exist</h1>
+  <p class="tagline">GBP/TFFT framework · Three views of the same geometry</p>
+</header>
+
+<div class="zero-row">
+  <button class="zbtn active" data-n="1">γ₁ · N=28 · p=7 (C2↓)</button>
+  <button class="zbtn" data-n="2">γ₂ · N=42 · p=7 (C2↓)</button>
+  <button class="zbtn" data-n="3">γ₃ · N=50 · p=5 (C1↑)</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="1">① Mirror Pairs</button>
+  <button class="tab" data-tab="2">② Catalan Balance</button>
+  <button class="tab" data-tab="3">③ Jones · Freedman</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TAB 1 -->
+<div class="tab-panel active" id="panel-1">
+<div class="t1-layout">
+  <div class="canvas-wrap">
+    <canvas id="cv1" width="320" height="320"></canvas>
+  </div>
+  <div class="info-col">
+    <div class="card">
+      <div class="card-title">Three-Layer Decomposition</div>
+      <div id="decomp-rows"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Mirror Pairs {r , N−r} — centroid = N/2</div>
+      <table class="pt"><thead><tr><th>r</th><th>N−r</th><th>sum</th><th>Catalan p²/(p²±1)</th></tr></thead>
+      <tbody id="pbody"></tbody></table>
+    </div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:var(--c1)"></div><span class="c1">C1 p≡1(4) χ=+1 ↑</span></div>
+      <div class="li"><div class="ld" style="background:var(--c2)"></div><span class="c2">C2 p≡3(4) χ=−1 ↓</span></div>
+      <div class="li"><div class="ld" style="background:var(--neutral)"></div><span class="cn">no lane</span></div>
+    </div>
+  </div>
+</div>
+<div class="narrative" id="narr1"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TAB 2 -->
+<div class="tab-panel" id="panel-2">
+<div class="t2-layout">
+  <div class="card">
+    <div class="card-title">Catalan Euler Product — C1↑ vs C2↓ running balance</div>
+    <div id="catalan-rows"></div>
+    <div class="g-line" id="g-converge"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Mertens-style running sum — C1(+1) vs C2(−1)</div>
+    <canvas id="mertens-canvas" width="300" height="220"></canvas>
+    <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.5rem;font-family:'JetBrains Mono',monospace;" id="mertens-caption"></div>
+  </div>
+</div>
+<div class="narrative" style="margin-top:0.85rem;" id="narr2">
+  <em>Catalan's constant G ≈ 0.9160</em> is the exact balance point of the C1/C2 two-lane Euler product. Every prime coprime to 30 is assigned χ=+1 (C1, pushes product up) or χ=−1 (C2, pulls product down) by its mod-4 residue. The product converges to G because the <strong>mod-30 mirror symmetry</strong> — gcd(N−r, N) = gcd(r, N) — pairs every C1 prime with a C2 mirror, preventing either lane from dominating. The Mertens function M(x) is the running score of these ±1 signs. If either lane dominated, M(x) would grow without bound, violating the Riemann Hypothesis. G being finite <em>is</em> the RH in number-theoretic language.
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TAB 3 -->
+<div class="tab-panel" id="panel-3">
+<div class="t3-layout">
+  <div>
+    <div class="card" style="margin-bottom:0.8rem;">
+      <div class="card-title">Jones Polynomial Evaluations at A = e^{iπ/5}</div>
+      <div id="jones-rows"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">The Topology Chain</div>
+      <div id="chain-items"></div>
+    </div>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="jones-canvas" width="320" height="380"></canvas>
+  </div>
+</div>
+<div class="narrative" style="margin-top:0.85rem;" id="narr3">
+  The Riemann zeros are not just number theory — they are <em>physical events</em>. In Freedman's topological quantum computation framework, the <strong>T1 Möbius torus</strong> supports non-Abelian anyons whose braiding is governed by Chern-Simons theory at level k=3. The 8 Z₃₀* winding modes are the 8 protected anyon species. A zero γₙ is where an anyon worldline crosses the Möbius seam at Re(s)=1/2. The Jones polynomial C₂→0 means the figure-eight knot is a <strong>zero mode</strong> — invisible to measurement but structurally required for modular completeness. The Riemann Hypothesis is equivalent to Freedman's topological protection: the seam cannot be moved off Re(s)=1/2.
+</div>
+</div>
+
+<div class="eq">
+  Mirror pairs: <em>r + (N−r) = N</em> → centroid = N/2 exactly &nbsp;·&nbsp;
+  G = (15/16)·∏p²/(p²−χ) &nbsp;·&nbsp;
+  C₂ Jones = 0 (Φ₁₀(t)=0, t⁵=−1) &nbsp;·&nbsp;
+  Hopf link = <em>±φ</em> &nbsp;·&nbsp;
+  d(anyon) = <em>φ</em>
+</div>
+
+</div><!-- .page -->
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// MATH UTILITIES
+// ══════════════════════════════════════════════════════════════════════════
+function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+function zstar(N){const r=[];for(let i=1;i<N;i++)if(gcd(i,N)===1)r.push(i);return r;}
+function chi4(p){return p%4===1?1:-1;}
+function isPrime(n){if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true;}
+function sieve(lim){const a=[];for(let i=2;i<=lim;i++)if(isPrime(i))a.push(i);return a;}
+const PHI=(1+Math.sqrt(5))/2;
+
+function rLane(r,N,newP){
+  for(const p of newP){
+    if(r%p===0||(N-r)%p===0) return chi4(p)===1?'c1':'c2';
+  }
+  return 'n';
+}
+
+function catalanFactor(p){
+  const c=chi4(p);
+  const f=p*p/(p*p-c);
+  return {factor:f, up:c===1, frac:c===1?`${p}²/(${p}²−1)`:`${p}²/(${p}²+1)`};
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════
+const ZEROS={
+  1:{gamma:14.134725,N:28,delta:0.134725,P:0.6088,newP:[7],col:'#e8c97a',
+     narr:`<em>N = 28 = 4 × 7</em> — Riemann's first modular. The 12 coprime residues of Z(28)* form <strong>6 mirror pairs</strong>, each summing exactly to 28. Centroid = 14 = N/2 exactly (algebraic identity: gcd(N−r,N)=gcd(r,N)). The zero γ₁ = 14.135 sits <span class="mono">+0.135</span> above — the Euler product phase lean. The new prime entering at N=28 is <strong>p=7 (C2, χ=−1)</strong>: it pulls the Catalan product down by factor 49/50. The table shows the Catalan factor for each pair's prime.`},
+  2:{gamma:21.022040,N:42,delta:0.022040,P:0.6088,newP:[7],col:'#f0a0d0',
+     narr:`<em>N = 42 = 2×3×7</em> — same new prime p=7, second harmonic. Z(42)* has <strong>6 mirror pairs</strong> all summing to 42, centroid = 21 exactly. γ₂ ≈ 21.022 is only <span class="mono">+0.022</span> above center — ten times tighter than γ₁. Identical <strong>p=7 (C2↓)</strong> Catalan factor 49/50. The Euler product phases balance more tightly at the second harmonic of the 7-winding.`},
+  3:{gamma:25.010858,N:50,delta:0.010858,P:0.4909,newP:[5],col:'#7de0d8',
+     narr:`<em>N = 50 = 2×5²</em> — the new prime is <strong>p=5 (C1, χ=+1)</strong>: pushes the Catalan product up by factor 25/24. Z(50)* has <strong>10 mirror pairs</strong> all summing to 50, centroid = 25 exactly. γ₃ ≈ 25.011 — tightest lean yet, only <span class="mono">+0.011</span>. The φ-scale enters: cos²(π/5) = φ²/4. Magic number 50 appears directly from <span class="mono">2γ₃ ≈ 50</span>.`}
+};
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB 1: CANVAS
+// ══════════════════════════════════════════════════════════════════════════
+const cv1=document.getElementById('cv1');
+const c1=cv1.getContext('2d');
+const W=320,H=320,CX=W/2,CY=H/2,R=120;
+let tick=0, an=1;
+
+function drawMirror(n,t){
+  const zd=ZEROS[n];
+  const N=zd.N;
+  const rs=zstar(N);
+  const pairs=[];
+  for(const r of rs)if(r<N-r)pairs.push([r,N-r]);
+
+  c1.clearRect(0,0,W,H);
+  const bg=c1.createRadialGradient(CX,CY,0,CX,CY,R*1.5);
+  bg.addColorStop(0,'#0e1122');bg.addColorStop(1,'#080a12');
+  c1.fillStyle=bg;c1.fillRect(0,0,W,H);
+
+  c1.beginPath();c1.arc(CX,CY,R,0,Math.PI*2);
+  c1.strokeStyle='rgba(42,47,72,0.6)';c1.lineWidth=0.7;c1.stroke();
+  c1.beginPath();c1.arc(CX,CY,R*0.36,0,Math.PI*2);
+  c1.strokeStyle='rgba(42,47,72,0.3)';c1.lineWidth=0.5;c1.stroke();
+
+  // Mirror pair chords
+  pairs.forEach(([r,nr])=>{
+    const a1=(r/N)*2*Math.PI-Math.PI/2;
+    const a2=(nr/N)*2*Math.PI-Math.PI/2;
+    const x1=CX+R*Math.cos(a1),y1=CY+R*Math.sin(a1);
+    const x2=CX+R*Math.cos(a2),y2=CY+R*Math.sin(a2);
+    const lane=rLane(r,N,zd.newP);
+    const col=lane==='c1'?'rgba(91,200,255,0.2)':lane==='c2'?'rgba(255,140,90,0.2)':'rgba(122,138,184,0.09)';
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    const dx=mx-CX,dy=my-CY,dist=Math.sqrt(dx*dx+dy*dy);
+    let cpx=CX,cpy=CY;
+    if(dist>2){cpx=CX+dx*0.28;cpy=CY+dy*0.28;}
+    c1.beginPath();c1.moveTo(x1,y1);
+    c1.quadraticCurveTo(cpx,cpy,x2,y2);
+    c1.strokeStyle=col;c1.lineWidth=1.0;c1.stroke();
+  });
+
+  // Centroid dashed line
+  const cA=((N/2)/N)*2*Math.PI-Math.PI/2;
+  c1.beginPath();c1.moveTo(CX,CY);
+  c1.lineTo(CX+(R-1)*Math.cos(cA),CY+(R-1)*Math.sin(cA));
+  c1.strokeStyle='rgba(232,201,122,0.4)';c1.lineWidth=0.9;
+  c1.setLineDash([3,4]);c1.stroke();c1.setLineDash([]);
+  const lx2=CX+(R+17)*Math.cos(cA),ly2=CY+(R+17)*Math.sin(cA);
+  c1.fillStyle='rgba(201,168,76,0.7)';
+  c1.font="8px 'JetBrains Mono',monospace";
+  c1.textAlign='center';c1.textBaseline='middle';
+  c1.fillText('N/2='+N/2,lx2,ly2);
+
+  // Residue nodes
+  rs.forEach(r=>{
+    const a=(r/N)*2*Math.PI-Math.PI/2;
+    const x=CX+R*Math.cos(a),y=CY+R*Math.sin(a);
+    const lane=rLane(r,N,zd.newP);
+    const isHP=zd.newP.some(p=>r%p===0||(N-r)%p===0);
+    const isEdge=r===1||r===N-1;
+    let fc,sc,rad;
+    if(isHP){
+      fc=lane==='c1'?'#5bc8ff':'#ff8c5a';
+      sc=lane==='c1'?'#a8e4ff':'#ffb898';
+      rad=5;
+      const g2=c1.createRadialGradient(x,y,0,x,y,10);
+      g2.addColorStop(0,fc+'44');g2.addColorStop(1,fc+'00');
+      c1.beginPath();c1.arc(x,y,10,0,Math.PI*2);c1.fillStyle=g2;c1.fill();
+    } else if(isEdge){fc='#c06898';sc='#e09ab8';rad=4.5;}
+    else{fc='#2e3350';sc='#4a5070';rad=3.5;}
+    c1.beginPath();c1.arc(x,y,rad,0,Math.PI*2);
+    c1.fillStyle=fc;c1.strokeStyle=sc;c1.lineWidth=0.7;c1.fill();c1.stroke();
+    const showLbl=N<=42||isHP||isEdge;
+    if(showLbl){
+      c1.fillStyle=isHP?sc:isEdge?'#806090':'#3a405a';
+      c1.font=`${isHP?'500':'400'} 8px 'JetBrains Mono',monospace`;
+      c1.textAlign='center';c1.textBaseline='middle';
+      c1.fillText(r,CX+(R+14)*Math.cos(a),CY+(R+14)*Math.sin(a));
+    }
+  });
+
+  // γ dot
+  const gA=cA+(zd.delta/N)*2*Math.PI*18;
+  const gR=R*0.38;
+  const gx=CX+gR*Math.cos(gA),gy=CY+gR*Math.sin(gA);
+  const pls=0.5+0.5*Math.sin(t*0.06);
+  const gr=c1.createRadialGradient(gx,gy,0,gx,gy,12);
+  gr.addColorStop(0,zd.col+'dd');gr.addColorStop(0.5,zd.col+'44');gr.addColorStop(1,zd.col+'00');
+  c1.beginPath();c1.arc(gx,gy,12,0,Math.PI*2);c1.fillStyle=gr;c1.fill();
+  c1.beginPath();c1.arc(gx,gy,3+pls,0,Math.PI*2);c1.fillStyle=zd.col;c1.fill();
+  c1.fillStyle=zd.col;c1.font="bold 9px 'Cinzel',serif";
+  c1.textAlign='center';c1.textBaseline='middle';
+  c1.fillText(['','γ₁','γ₂','γ₃'][n],gx,gy-12);
+
+  c1.fillStyle='rgba(201,168,76,0.4)';c1.font="600 7px 'Cinzel',serif";
+  c1.textAlign='center';c1.textBaseline='middle';
+  c1.fillText('Z('+N+')*',CX,CY-5);
+  c1.fillStyle='rgba(90,100,128,0.45)';c1.font="7px 'JetBrains Mono',monospace";
+  c1.fillText('mod-'+N,CX,CY+5);
+}
+
+function renderDecomp(n){
+  const zd=ZEROS[n];
+  const p=zd.newP[0];
+  const laneStr=chi4(p)===1?'C1 χ=+1 ↑':'C2 χ=−1 ↓';
+  const laneCol=chi4(p)===1?'var(--c1)':'var(--c2)';
+  document.getElementById('decomp-rows').innerHTML=`
+    <div class="stat-row"><span class="stat-label">Zero γ${['','₁','₂','₃'][n]}</span><span class="stat-val g">${zd.gamma.toFixed(6)}</span></div>
+    <div class="stat-row"><span class="stat-label">Layer 1: N/2</span><span class="stat-val t">${zd.N}/2 = ${zd.N/2}</span></div>
+    <div class="stat-row"><span class="stat-label">Layer 2: P(N)</span><span class="stat-val v">${zd.P} [MALUS]</span></div>
+    <div class="stat-row"><span class="stat-label">Layer 3: δ lean</span><span class="stat-val p">+${zd.delta.toFixed(6)}</span></div>
+    <div class="stat-row"><span class="stat-label">New prime</span><span class="stat-val" style="color:${laneCol}">${p} ≡ ${p%4} mod 4 → ${laneStr}</span></div>
+    <div class="stat-row"><span class="stat-label">|δ/γ|</span><span class="stat-val" style="color:var(--text)">${((zd.delta/zd.gamma)*100).toFixed(3)}%</span></div>
+  `;
+}
+
+function renderPairs(n){
+  const zd=ZEROS[n];
+  const N=zd.N;
+  const rs=zstar(N);
+  const pairs=[];
+  for(const r of rs)if(r<N-r)pairs.push([r,N-r]);
+  const tbody=document.getElementById('pbody');
+  tbody.innerHTML='';
+  pairs.forEach(([r,nr])=>{
+    const lane=rLane(r,N,zd.newP);
+    const cls=lane==='c1'?'c1':lane==='c2'?'c2':'cn';
+    const hi=zd.newP.some(p=>r%p===0||nr%p===0);
+    // Find the relevant prime for this pair
+    let cfStr='—';
+    for(const p of zd.newP){
+      if(r%p===0||nr%p===0){
+        const {frac,up}=catalanFactor(p);
+        cfStr=`<span class="${up?'c1':'c2'}">${frac} ${up?'↑':'↓'}</span>`;
+      }
+    }
+    tbody.innerHTML+=`<tr style="${hi?'background:rgba(255,255,255,0.02)':''}">
+      <td class="${cls}">${r}</td><td class="${cls}">${nr}</td>
+      <td class="cn">${N}</td><td>${cfStr}</td>
+    </tr>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB 2: CATALAN / MERTENS
+// ══════════════════════════════════════════════════════════════════════════
+const THETA30_PRIMES = sieve(120).filter(p=>gcd(p,30)===1); // primes coprime to 30
+const G_TRUE = 0.915965594177219;
+
+function buildCatalanRows(){
+  const container=document.getElementById('catalan-rows');
+  // Boundary terms first
+  let html=`
+    <div style="font-size:0.72rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;padding:0.3rem 0 0.5rem;border-bottom:1px solid var(--dim);margin-bottom:0.4rem;">
+      Boundary: p=3 (C2↓) × 9/10 &nbsp;·&nbsp; p=5 (C1↑) × 25/24 = <span style="color:var(--gold)">15/16 = 0.9375</span>
+    </div>`;
+
+  let running=15/16;
+  const PRIMES_SHOW = THETA30_PRIMES.slice(0,16);
+
+  PRIMES_SHOW.forEach((p,i)=>{
+    const {factor,up,frac}=catalanFactor(p);
+    running*=factor;
+    const approx=running;
+    const col=up?'var(--c1)':'var(--c2)';
+    const dir=up?'↑':'↓';
+    const barW=Math.min(100,Math.abs((approx/G_TRUE-1)*300+50));
+    const barCol=up?'#5bc8ff':'#ff8c5a';
+    html+=`<div class="cat-row">
+      <span class="cat-p" style="color:${col}">${p}</span>
+      <span class="cat-lane" style="color:${col}">${up?'C1':'C2'}</span>
+      <span class="cat-frac" style="color:${col}">${frac}</span>
+      <span class="cat-dir" style="color:${col}">${dir}</span>
+      <div class="cat-bar-wrap"><div class="cat-bar" style="width:${Math.min(100,Math.abs(approx*100))}%;background:${barCol};opacity:0.7;"></div></div>
+      <span class="cat-running" style="color:${col}">${approx.toFixed(4)}</span>
+    </div>`;
+  });
+
+  // Running product after all
+  container.innerHTML=html;
+  document.getElementById('g-converge').innerHTML=
+    `Running product → <em>G = ${G_TRUE.toFixed(8)}</em> &nbsp;·&nbsp; (15/16) × ∏ p²/(p²−χ) = G`;
+}
+
+function drawMertens(){
+  const mc=document.getElementById('mertens-canvas');
+  const mx=mc.getContext('2d');
+  const MW=300,MH=220;
+  mc.width=MW;mc.height=MH;
+
+  mx.fillStyle='#080a12';mx.fillRect(0,0,MW,MH);
+
+  // Build Mertens-style: for primes in Theta30, running sum of chi values
+  const primes=THETA30_PRIMES.slice(0,40);
+  const sums=[0];
+  primes.forEach(p=>{sums.push(sums[sums.length-1]+chi4(p));});
+
+  const minS=Math.min(...sums),maxS=Math.max(...sums);
+  const range=Math.max(Math.abs(minS),Math.abs(maxS),2);
+
+  // Grid
+  mx.strokeStyle='rgba(42,47,72,0.5)';mx.lineWidth=0.5;
+  [0.25,0.5,0.75].forEach(f=>{
+    const y=MH/2-f*(MH/2-20);
+    mx.beginPath();mx.moveTo(30,y);mx.lineTo(MW-10,y);mx.stroke();
+    mx.beginPath();mx.moveTo(30,MH-y+MH/2-MH/2);mx.lineTo(MW-10,MH-y+MH/2-MH/2);mx.stroke();
+  });
+
+  // Zero line
+  mx.strokeStyle='rgba(201,168,76,0.4)';mx.lineWidth=0.8;
+  mx.beginPath();mx.moveTo(30,MH/2);mx.lineTo(MW-10,MH/2);mx.stroke();
+
+  // Plot running sum
+  mx.strokeStyle='rgba(180,180,220,0.8)';mx.lineWidth=1.2;
+  mx.beginPath();
+  sums.forEach((s,i)=>{
+    const x=30+(MW-40)*(i/primes.length);
+    const y=MH/2-s*(MH/2-20)/range;
+    if(i===0)mx.moveTo(x,y);else mx.lineTo(x,y);
+  });
+  mx.stroke();
+
+  // Color the bars
+  primes.forEach((p,i)=>{
+    const x=30+(MW-40)*(i/primes.length);
+    const c=chi4(p)===1;
+    mx.fillStyle=c?'rgba(91,200,255,0.5)':'rgba(255,140,90,0.5)';
+    mx.fillRect(x-1,MH/2,2,c?-8:8);
+  });
+
+  // Labels
+  mx.fillStyle='rgba(90,100,130,0.7)';
+  mx.font="7px 'JetBrains Mono',monospace";
+  mx.textAlign='center';mx.textBaseline='middle';
+  mx.fillText('+',22,20);mx.fillText('−',22,MH-12);
+  mx.fillStyle='rgba(201,168,76,0.5)';
+  mx.fillText('0',22,MH/2);
+
+  document.getElementById('mertens-caption').innerHTML=
+    `<span style="color:var(--c1)">Blue spike = C1 prime (+1)</span> &nbsp;·&nbsp; <span style="color:var(--c2)">Orange spike = C2 prime (−1)</span><br>Running sum stays bounded → M(x) = O(√x) → Riemann Hypothesis`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB 3: JONES / FREEDMAN
+// ══════════════════════════════════════════════════════════════════════════
+const JONES_DATA=[
+  {label:'C₀  Unknot (plain torus)', val:'J = 1', note:'trivial braiding', badge:'bd', badgeText:'D'},
+  {label:'C₁  T1 Möbius — fundamental anyon', val:'J = e^{2πi/5}', note:'braiding phase, dim = φ', badge:'bd', badgeText:'D'},
+  {label:'C₂  Figure-eight — zero mode', val:'J = 0  (Φ₁₀(t)=0)', note:'shadow term, invisible', badge:'bz', badgeText:'D'},
+  {label:'T4  Hopf link — dual chirality', val:'J = ±φ', note:`±${PHI.toFixed(6)}`, badge:'bd', badgeText:'D'},
+  {label:'Quantum dimension d (k=3)', val:`φ = ${PHI.toFixed(6)}`, note:'exact: sin(2π/5)/sin(π/5)', badge:'bd', badgeText:'D'},
+  {label:'Anyon species  φ(30)', val:'8 protected modes', note:'Z₃₀* = {1,7,11,13,17,19,23,29}', badge:'bd', badgeText:'D'},
+];
+
+const CHAIN=[
+  {label:'Step 1', text:'<em>Mirror pairs {r, N−r}</em> force centroid = N/2 exactly — the number-theoretic forcing of Re(s) = 1/2.', active:true},
+  {label:'Step 2', text:'<em>C1/C2 lane balance</em> — every prime gets χ=±1, the product converges to <strong>G = 0.9160</strong>. Neither lane dominates because of the mod-30 GCD mirror symmetry.', active:false},
+  {label:'Step 3', text:'<em>Mertens function</em> M(x) = Σμ(n) is the running score of these ±1 signs. G being finite means M(x) = O(√x) — equivalent to RH (Titchmarsh §14.28).', active:false},
+  {label:'Step 4', text:'<em>Zeros as anyon events</em> — a Riemann zero γₙ is where an anyon worldline crosses the Möbius seam at Re(s)=1/2 on its first torus traversal (Freedman TQC framework).', active:false},
+  {label:'Step 5', text:'<em>C₂ Jones = 0</em> — the figure-eight knot is a zero mode at A=e^{iπ/5}: t⁵=−1 forces Φ₁₀(t)=0 algebraically. The mock theta shadow is topologically invisible but structurally required.', active:false},
+  {label:'Step 6', text:'<em>Hopf link = ±φ</em> — the T4 ER-bridge evaluates to exactly ±φ at A=e^{iπ/5}. The golden ratio emerges from the same root of unity that makes C₂ vanish.', active:false},
+];
+
+function renderJones(){
+  const el=document.getElementById('jones-rows');
+  el.innerHTML=JONES_DATA.map(d=>`
+    <div class="jones-row">
+      <span class="jr-label">${d.label}</span>
+      <span class="jr-val" style="font-size:0.74rem;color:var(--gold)">${d.val}</span>
+      <span class="jr-badge ${d.badge}">${d.badgeText}</span>
+    </div>`).join('');
+}
+
+function renderChain(){
+  const el=document.getElementById('chain-items');
+  el.innerHTML=CHAIN.map((c,i)=>`
+    <div class="chain-item ${c.active?'active-chain':''}" id="chain-${i}">
+      <div class="chain-num">${c.label}</div>
+      <div class="chain-text">${c.text}</div>
+    </div>`).join('');
+}
+
+let chainTick=0;
+function animateChain(){
+  const items=document.querySelectorAll('.chain-item');
+  items.forEach((el,i)=>{
+    el.classList.toggle('active-chain', i===chainTick%CHAIN.length);
+  });
+  chainTick++;
+}
+setInterval(animateChain,2200);
+
+// Jones canvas — show T1 Möbius torus schematic + anyon worldline
+function drawJones(){
+  const jc=document.getElementById('jones-canvas');
+  const jx=jc.getContext('2d');
+  const JW=320,JH=380;
+  jc.width=JW;jc.height=JH;
+
+  jx.fillStyle='#080a12';jx.fillRect(0,0,JW,JH);
+
+  // ── Draw a schematic Möbius band (rectangular with twist indicator)
+  const bx=40,by=30,bw=240,bh=80;
+  jx.fillStyle='rgba(13,16,32,0.9)';
+  jx.strokeStyle='rgba(42,47,72,0.8)';jx.lineWidth=1;
+  jx.fillRect(bx,by,bw,bh);jx.strokeRect(bx,by,bw,bh);
+
+  // Möbius seam line (Re(s)=1/2 = middle of band)
+  const seamY=by+bh/2;
+  jx.beginPath();jx.moveTo(bx,seamY);jx.lineTo(bx+bw,seamY);
+  jx.strokeStyle='rgba(201,168,76,0.7)';jx.lineWidth=1.2;
+  jx.setLineDash([4,3]);jx.stroke();jx.setLineDash([]);
+  jx.fillStyle='rgba(201,168,76,0.7)';jx.font="8px 'JetBrains Mono',monospace";
+  jx.textAlign='left';jx.textBaseline='middle';
+  jx.fillText('Re(s) = 1/2  (Möbius seam)',bx+4,seamY-7);
+
+  // Anyon worldline (sinusoidal path crossing the seam)
+  jx.beginPath();
+  for(let xi=0;xi<=bw;xi++){
+    const frac=xi/bw;
+    const y=seamY+Math.sin(frac*Math.PI*3.5)*28;
+    if(xi===0)jx.moveTo(bx+xi,y);else jx.lineTo(bx+xi,y);
+  }
+  jx.strokeStyle='rgba(91,200,255,0.8)';jx.lineWidth=1.5;jx.stroke();
+
+  // Mark crossing points (zeros)
+  let zeroCount=0;
+  for(let xi=0;xi<=bw;xi++){
+    const frac=xi/bw;
+    const prevFrac=(xi-1)/bw;
+    const y=seamY+Math.sin(frac*Math.PI*3.5)*28;
+    const py=seamY+Math.sin(prevFrac*Math.PI*3.5)*28;
+    if(xi>0 && ((y-seamY)*(py-seamY)<0)){
+      zeroCount++;
+      const grd=jx.createRadialGradient(bx+xi,seamY,0,bx+xi,seamY,8);
+      grd.addColorStop(0,'rgba(232,201,122,0.9)');
+      grd.addColorStop(1,'rgba(232,201,122,0)');
+      jx.beginPath();jx.arc(bx+xi,seamY,8,0,Math.PI*2);
+      jx.fillStyle=grd;jx.fill();
+      jx.beginPath();jx.arc(bx+xi,seamY,3,0,Math.PI*2);
+      jx.fillStyle='#e8c97a';jx.fill();
+      jx.fillStyle='rgba(232,201,122,0.8)';jx.font="7px 'Cinzel',serif";
+      jx.textAlign='center';jx.textBaseline='bottom';
+      jx.fillText('γ'+['','₁','₂','₃','₄'][zeroCount]||'γ',bx+xi,seamY-10);
+    }
+  }
+
+  jx.fillStyle='rgba(91,200,255,0.6)';jx.font="7px 'JetBrains Mono',monospace";
+  jx.textAlign='center';jx.textBaseline='top';
+  jx.fillText('anyon worldline (720° Möbius closure)',bx+bw/2,by+bh+4);
+
+  // Twist indicator
+  jx.fillStyle='rgba(155,124,216,0.5)';jx.font="9px 'Cinzel',serif";
+  jx.textAlign='center';jx.textBaseline='middle';
+  jx.fillText('720° ↺',bx+bw-20,by+12);
+
+  // ── Z30* anyon circle below
+  const ac_y=by+bh+70;
+  const aR=62;
+  jx.beginPath();jx.arc(JW/2,ac_y,aR,0,Math.PI*2);
+  jx.strokeStyle='rgba(42,47,72,0.5)';jx.lineWidth=0.7;jx.stroke();
+  jx.fillStyle='rgba(42,47,72,0.2)';jx.fill();
+
+  const Z30=[1,7,11,13,17,19,23,29];
+  const anyonColors={'1':'#4a5070','7':'#ff8c5a','11':'#5bc8ff','13':'#9b7cd8','17':'#9b7cd8','19':'#5bc8ff','23':'#ff8c5a','29':'#4a5070'};
+  const anyonNames={'1':'vacuum','7':'strange','11':'down','13':'bottom','17':'top','19':'up','23':'charm','29':'vacuum'};
+
+  Z30.forEach((r,i)=>{
+    const a=(i/8)*2*Math.PI-Math.PI/2;
+    const x=JW/2+aR*Math.cos(a),y=ac_y+aR*Math.sin(a);
+    const col=anyonColors[r]||'#4a5070';
+    const g2=jx.createRadialGradient(x,y,0,x,y,9);
+    g2.addColorStop(0,col+'88');g2.addColorStop(1,col+'00');
+    jx.beginPath();jx.arc(x,y,9,0,Math.PI*2);jx.fillStyle=g2;jx.fill();
+    jx.beginPath();jx.arc(x,y,4.5,0,Math.PI*2);
+    jx.fillStyle=col;jx.fill();
+    jx.fillStyle=col==='#4a5070'?'rgba(90,100,120,0.6)':col+'cc';
+    jx.font="7px 'JetBrains Mono',monospace";
+    jx.textAlign='center';jx.textBaseline='middle';
+    jx.fillText(r,JW/2+(aR+14)*Math.cos(a),ac_y+(aR+14)*Math.sin(a));
+  });
+
+  // Mirror pair chords on anyon circle
+  const pairs30=[[1,29],[7,23],[11,19],[13,17]];
+  pairs30.forEach(([r,nr],i)=>{
+    const ri=Z30.indexOf(r),nri=Z30.indexOf(nr);
+    const a1=(ri/8)*2*Math.PI-Math.PI/2, a2=(nri/8)*2*Math.PI-Math.PI/2;
+    const x1=JW/2+aR*Math.cos(a1),y1=ac_y+aR*Math.sin(a1);
+    const x2=JW/2+aR*Math.cos(a2),y2=ac_y+aR*Math.sin(a2);
+    jx.beginPath();jx.moveTo(x1,y1);
+    jx.quadraticCurveTo(JW/2,ac_y,x2,y2);
+    jx.strokeStyle='rgba(122,138,184,0.18)';jx.lineWidth=0.9;jx.stroke();
+  });
+
+  // Labels
+  jx.fillStyle='rgba(201,168,76,0.5)';jx.font="600 7px 'Cinzel',serif";
+  jx.textAlign='center';jx.textBaseline='middle';
+  jx.fillText('Z₃₀* anyons',JW/2,ac_y-2);
+  jx.fillStyle='rgba(90,100,128,0.45)';jx.font="7px 'JetBrains Mono',monospace";
+  jx.fillText('φ(30) = 8 protected species',JW/2,ac_y+10);
+
+  // Hopf link indicator
+  jx.fillStyle='rgba(232,201,122,0.6)';jx.font="8px 'JetBrains Mono',monospace";
+  jx.textAlign='center';jx.textBaseline='top';
+  jx.fillText('Hopf = ±φ = ±'+PHI.toFixed(4),JW/2,ac_y+aR+18);
+  jx.fillStyle='rgba(224,85,85,0.5)';
+  jx.fillText('C₂ (fig-8) J = 0  [shadow mode]',JW/2,ac_y+aR+30);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// WIRING
+// ══════════════════════════════════════════════════════════════════════════
+function setZero(n){
+  an=n;
+  renderDecomp(n);renderPairs(n);
+  document.getElementById('narr1').innerHTML=ZEROS[n].narr;
+}
+
+document.querySelectorAll('.zbtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.zbtn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    setZero(parseInt(b.dataset.n));
+  });
+});
+
+document.querySelectorAll('.tab').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('panel-'+b.dataset.tab).classList.add('active');
+  });
+});
+
+// Init
+setZero(1);
+buildCatalanRows();
+drawMertens();
+renderJones();
+renderChain();
+drawJones();
+
+function loop(){drawMirror(an,tick++);requestAnimationFrame(loop);}
+loop();
+</script>
+</body>
+</html>
